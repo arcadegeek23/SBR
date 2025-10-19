@@ -9,6 +9,7 @@ from app.signal_processor import SignalProcessor
 from app.scoring_engine import ScoringEngine
 from app.budget_engine import BudgetEngine
 from app.report_builder import ReportBuilder
+from app.ai_insights import AIInsightsEngine
 
 app = Flask(__name__, 
             template_folder='../templates',
@@ -47,6 +48,8 @@ report_builder = ReportBuilder(
     templates_dir=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
     reports_dir=Config.REPORTS_DIR
 )
+
+ai_insights_engine = AIInsightsEngine()
 
 # Create tables
 with app.app_context():
@@ -101,7 +104,16 @@ def generate_review():
         # Step 6: Calculate budget
         budget = budget_engine.calculate_budget(signals, gaps)
         
-        # Step 7: Generate reports
+        # Step 7: Generate AI insights
+        customer_data = {
+            'customer': customer,
+            'assets': assets,
+            'tickets': tickets,
+            'users': users
+        }
+        ai_insights = ai_insights_engine.generate_insights(signals, customer_data)
+        
+        # Step 8: Generate reports
         report_paths = report_builder.generate_report(
             customer_id=customer_id,
             customer_name=customer.get('name', 'Unknown'),
@@ -109,10 +121,11 @@ def generate_review():
             nist_scores=nist_scores,
             gaps=gaps,
             recommendations=recommendations,
-            budget=budget
+            budget=budget,
+            ai_insights=ai_insights
         )
         
-        # Step 8: Save to database
+        # Step 9: Save to database
         report_run = ReportRun(
             customer_id=customer_id,
             customer_name=customer.get('name', 'Unknown'),

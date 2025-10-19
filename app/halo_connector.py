@@ -150,23 +150,55 @@ class HaloConnector:
         
         return assets
     
-    def _mock_tickets(self, customer_id: str, days: int) -> List[Dict]:
-        """Generate mock ticket data"""
-        ticket_count = random.randint(30, 150)
+    def _mock_tickets(self, customer_id: str, days: int = 90) -> List[Dict]:
+        """Generate mock ticket data with detailed attributes"""
+        ticket_count = random.randint(50, 150)
         tickets = []
         
+        categories = ['Hardware Issue', 'Software Issue', 'Network Issue', 'Security', 'Password Reset', 
+                     'Account Access', 'Equipment Failure', 'Application Error', 'Email Issue', 'Printer Issue']
+        priorities = ['Low', 'Normal', 'Normal', 'Normal', 'High', 'Critical']
+        statuses = ['Resolved', 'Resolved', 'Resolved', 'Closed', 'Open']
+        
+        # Generate user names for ticket assignment
+        user_names = [f'User {i}' for i in range(random.randint(25, 100))]
+        
+        # Generate asset names
+        asset_names = []
+        for asset_type in ['Server', 'Workstation', 'Laptop']:
+            for i in range(random.randint(5, 20)):
+                asset_names.append((f'{asset_type}-{i:03d}', asset_type))
+        
         for i in range(ticket_count):
-            created = datetime.now() - timedelta(days=random.randint(0, days))
-            resolved = created + timedelta(hours=random.randint(1, 72))
+            month_offset = random.randint(0, 2)  # Distribute across 3 months
+            created = datetime.now() - timedelta(days=random.randint(month_offset * 30, (month_offset + 1) * 30))
+            resolution_hours = random.randint(1, 120)
+            resolved = created + timedelta(hours=resolution_hours)
+            
+            priority = random.choice(priorities)
+            category = random.choice(categories)
+            status = random.choice(statuses)
+            user = random.choice(user_names)
+            asset_info = random.choice(asset_names)
+            
+            # SLA based on priority
+            sla_target = {'Critical': 4, 'High': 8, 'Normal': 24, 'Low': 48}.get(priority, 24)
+            sla_met = resolution_hours <= sla_target
             
             tickets.append({
                 'id': f'ticket-{customer_id}-{i}',
-                'type': random.choice(['Incident', 'Service Request', 'Problem']),
-                'priority': random.choice(['Low', 'Medium', 'High', 'Critical']),
+                'subject': f'{category} - {user}',
                 'created_at': created.isoformat(),
-                'resolved_at': resolved.isoformat(),
-                'met_sla': random.choice([True, True, True, True, False]),
-                'category': random.choice(['Hardware', 'Software', 'Network', 'Security', 'Access'])
+                'resolved_at': resolved.isoformat() if status in ['Resolved', 'Closed'] else None,
+                'resolution_hours': resolution_hours if status in ['Resolved', 'Closed'] else None,
+                'sla_met': sla_met,
+                'category': category,
+                'priority': priority,
+                'status': status,
+                'user': user,
+                'asset': asset_info[0],
+                'asset_type': asset_info[1],
+                'month_offset': month_offset
             })
         
         return tickets

@@ -17,7 +17,7 @@ class ReportBuilder:
     
     def generate_report(self, customer_id: str, customer_name: str, signals: dict, 
                        nist_scores: dict, gaps: list, recommendations: list, 
-                       budget: dict) -> dict:
+                       budget: dict, ai_insights: dict = None) -> dict:
         """
         Generate report in all formats
         
@@ -35,7 +35,8 @@ class ReportBuilder:
             'overall_score': nist_scores.get('Overall', 0),
             'gaps': gaps,
             'recommendations': recommendations,
-            'budget': budget
+            'budget': budget,
+            'ai_insights': ai_insights or {}
         }
         
         # Generate unique filename

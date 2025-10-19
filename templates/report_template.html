@@ -90,6 +90,22 @@
             opacity: 0.9;
         }
         
+        .health-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .health-card.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .health-card.critical {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
@@ -107,97 +123,101 @@
         
         table td {
             padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e5e7eb;
         }
         
         table tr:hover {
-            background: #f9f9f9;
+            background: #f9fafb;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-strong {
+            background: #d1fae5;
+            color: #065f46;
         }
         
         .status-good {
-            color: #10b981;
-            font-weight: bold;
+            background: #dbeafe;
+            color: #1e40af;
         }
         
-        .status-warning {
-            color: #f59e0b;
-            font-weight: bold;
-        }
-        
-        .status-critical {
-            color: #ef4444;
-            font-weight: bold;
+        .status-needs-work {
+            background: #fed7aa;
+            color: #92400e;
         }
         
         .gap-card {
-            background: #fff;
-            border-left: 4px solid #ef4444;
+            border-left: 5px solid #ef4444;
+            background: #fef2f2;
             padding: 20px;
             margin: 15px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border-radius: 5px;
         }
         
-        .gap-card.severity-high {
+        .gap-card.high {
             border-left-color: #f59e0b;
+            background: #fffbeb;
         }
         
-        .gap-card.severity-medium {
+        .gap-card.medium {
             border-left-color: #3b82f6;
+            background: #eff6ff;
         }
         
-        .gap-card .gap-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+        .gap-card h3 {
+            margin-top: 0;
         }
         
-        .gap-card .gap-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .gap-card .severity-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
+        .severity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
             font-size: 0.85em;
-            font-weight: bold;
+            font-weight: 600;
+            float: right;
+        }
+        
+        .severity-critical {
+            background: #ef4444;
             color: white;
         }
         
-        .severity-badge.critical {
-            background: #ef4444;
-        }
-        
-        .severity-badge.high {
+        .severity-high {
             background: #f59e0b;
+            color: white;
         }
         
-        .severity-badge.medium {
+        .severity-medium {
             background: #3b82f6;
+            color: white;
         }
         
         .rec-card {
             background: #f0f9ff;
-            border-left: 4px solid #3b82f6;
+            border-left: 5px solid #667eea;
             padding: 20px;
             margin: 15px 0;
             border-radius: 5px;
         }
         
-        .rec-card ul {
-            margin: 10px 0 0 20px;
+        .rec-card h3 {
+            color: #667eea;
+            margin-top: 0;
         }
         
-        .rec-card li {
-            margin: 5px 0;
+        .rec-card ul {
+            margin: 10px 0 10px 20px;
         }
         
         .budget-summary {
-            background: #ecfdf5;
-            border: 2px solid #10b981;
+            background: #f0fdf4;
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
@@ -236,6 +256,50 @@
         .metric-box .label {
             color: #6b7280;
             font-size: 0.95em;
+        }
+        
+        .insight-box {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .insight-box.positive {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+        
+        .insight-box.warning {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        
+        .user-list, .asset-list {
+            margin: 15px 0;
+        }
+        
+        .user-item, .asset-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-item:hover, .asset-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
         }
         
         .footer {
@@ -290,6 +354,302 @@
                 </div>
             </div>
             
+            <!-- AI Operational Overview -->
+            {% if ai_insights.operational_overview %}
+            <div class="section">
+                <h2>🤖 AI Operational Overview</h2>
+                <div class="health-card {% if ai_insights.operational_overview.health_color == 'orange' %}warning{% elif ai_insights.operational_overview.health_color == 'red' %}critical{% endif %}">
+                    <h3 style="margin-top: 0; font-size: 1.5em;">Operational Health: {{ ai_insights.operational_overview.health_status }}</h3>
+                    <div style="font-size: 3em; font-weight: bold; margin: 15px 0;">{{ "%.1f" | format(ai_insights.operational_overview.operational_health_score) }}%</div>
+                </div>
+                
+                <h3>Key Findings</h3>
+                <ul style="margin-left: 20px;">
+                    {% for point in ai_insights.operational_overview.summary_points %}
+                    <li style="margin: 10px 0;">{{ point }}</li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="metric-grid">
+                    <div class="metric-box">
+                        <div class="label">Patch Health</div>
+                        <div class="value">{{ "%.0f" | format(ai_insights.operational_overview.key_metrics.patch_health) }}%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="label">Backup Health</div>
+                        <div class="value">{{ "%.0f" | format(ai_insights.operational_overview.key_metrics.backup_health) }}%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="label">SLA Health</div>
+                        <div class="value">{{ "%.0f" | format(ai_insights.operational_overview.key_metrics.sla_health) }}%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="label">Ticket Health</div>
+                        <div class="value">{{ "%.0f" | format(ai_insights.operational_overview.key_metrics.ticket_health) }}%</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Ticket Analysis -->
+            {% if ai_insights.ticket_analysis %}
+            <div class="section">
+                <h2>📊 Ticket Analysis</h2>
+                <p><strong>Total Tickets (90 days):</strong> {{ ai_insights.ticket_analysis.total_tickets }}</p>
+                <p><strong>Average Resolution Time:</strong> {{ "%.1f" | format(ai_insights.ticket_analysis.avg_resolution_hours) }} hours</p>
+                
+                <h3>Ticket Categories</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category, count in ai_insights.ticket_analysis.categories.items() %}
+                        <tr>
+                            <td>{{ category }}</td>
+                            <td>{{ count }}</td>
+                            <td>{{ "%.1f" | format(count / ai_insights.ticket_analysis.total_tickets * 100) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h3>Priority Distribution</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for priority, count in ai_insights.ticket_analysis.priorities.items() %}
+                        <tr>
+                            <td>{{ priority }}</td>
+                            <td>{{ count }}</td>
+                            <td>{{ "%.1f" | format(count / ai_insights.ticket_analysis.total_tickets * 100) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h3>Insights</h3>
+                {% for insight in ai_insights.ticket_analysis.insights %}
+                <div class="insight-box">{{ insight }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- SLA Performance -->
+            {% if ai_insights.sla_performance %}
+            <div class="section">
+                <h2>⏱️ SLA Performance Analysis</h2>
+                <p><strong>Overall SLA Attainment:</strong> {{ "%.1f" | format(ai_insights.sla_performance.overall_attainment) }}%</p>
+                <p><strong>Total SLA Breaches:</strong> {{ ai_insights.sla_performance.total_breaches }}</p>
+                
+                <h3>Performance by Priority</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>SLA Attainment</th>
+                            <th>Met</th>
+                            <th>Breached</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for priority, stats in ai_insights.sla_performance.by_priority.items() %}
+                        <tr>
+                            <td>{{ priority }}</td>
+                            <td>
+                                <span class="status-badge {% if stats.attainment >= 90 %}status-strong{% elif stats.attainment >= 75 %}status-good{% else %}status-needs-work{% endif %}">
+                                    {{ "%.1f" | format(stats.attainment) }}%
+                                </span>
+                            </td>
+                            <td>{{ stats.met }}</td>
+                            <td>{{ stats.breached }}</td>
+                            <td>{{ stats.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h3>Worst Performing Categories</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>SLA Attainment</th>
+                            <th>Total Tickets</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category, stats in ai_insights.sla_performance.by_category.items() %}
+                        <tr>
+                            <td>{{ category }}</td>
+                            <td>{{ "%.1f" | format(stats.attainment) }}%</td>
+                            <td>{{ stats.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h3>Insights</h3>
+                {% for insight in ai_insights.sla_performance.insights %}
+                <div class="insight-box warning">{{ insight }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Top Users -->
+            {% if ai_insights.top_users and ai_insights.top_users.top_users %}
+            <div class="section">
+                <h2>👥 Top Users by Ticket Volume</h2>
+                <p>Users generating the most support tickets:</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>Tickets</th>
+                            <th>% of Total</th>
+                            <th>Top Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in ai_insights.top_users.top_users %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ user.user }}</td>
+                            <td>{{ user.ticket_count }}</td>
+                            <td>{{ "%.1f" | format(user.percentage) }}%</td>
+                            <td>{{ user.top_category }} ({{ user.category_count }})</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h3>Insights</h3>
+                {% for insight in ai_insights.top_users.insights %}
+                <div class="insight-box">{{ insight }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Top Assets -->
+            {% if ai_insights.top_assets and ai_insights.top_assets.top_assets %}
+            <div class="section">
+                <h2>💻 Top Assets Requiring Attention</h2>
+                <p>Assets generating the most support tickets:</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Asset</th>
+                            <th>Type</th>
+                            <th>Tickets</th>
+                            <th>% of Total</th>
+                            <th>Top Issue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in ai_insights.top_assets.top_assets %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ asset.asset }}</td>
+                            <td>{{ asset.asset_type }}</td>
+                            <td>{{ asset.ticket_count }}</td>
+                            <td>{{ "%.1f" | format(asset.percentage) }}%</td>
+                            <td>{{ asset.top_issue }} ({{ asset.issue_count }})</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h3>Insights</h3>
+                {% for insight in ai_insights.top_assets.insights %}
+                <div class="insight-box warning">{{ insight }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- AI Recommendations -->
+            {% if ai_insights.ai_recommendations %}
+            <div class="section">
+                <h2>🎯 AI-Powered Recommendations</h2>
+                <p>Data-driven recommendations based on ticket patterns and operational metrics:</p>
+                
+                {% for rec in ai_insights.ai_recommendations %}
+                <div class="rec-card">
+                    <h3>{{ rec.title }}</h3>
+                    <p><strong>Priority:</strong> {{ rec.priority }} | <strong>Category:</strong> {{ rec.category }}</p>
+                    <p><strong>Rationale:</strong> {{ rec.rationale }}</p>
+                    <p><strong>Expected Impact:</strong> {{ rec.impact }}</p>
+                    <p><strong>Estimated Savings:</strong> {{ rec.estimated_savings }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Trend Analysis -->
+            {% if ai_insights.trend_analysis %}
+            <div class="section">
+                <h2>📈 Trend Analysis</h2>
+                <p><strong>Trend Direction:</strong> 
+                    <span class="status-badge {% if ai_insights.trend_analysis.trend_status == 'positive' %}status-strong{% elif ai_insights.trend_analysis.trend_status == 'warning' %}status-needs-work{% else %}status-good{% endif %}">
+                        {{ ai_insights.trend_analysis.trend_direction | capitalize }} ({{ "%.1f" | format(ai_insights.trend_analysis.trend_percentage) }}%)
+                    </span>
+                </p>
+                
+                <h3>Monthly Ticket Volume</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Tickets</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for month in ai_insights.trend_analysis.monthly_volumes %}
+                        <tr>
+                            <td>{{ month.month }}</td>
+                            <td>{{ month.volume }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% for insight in ai_insights.trend_analysis.insights %}
+                <div class="insight-box {% if ai_insights.trend_analysis.trend_status == 'positive' %}positive{% elif ai_insights.trend_analysis.trend_status == 'warning' %}warning{% endif %}">
+                    {{ insight }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Anomalies -->
+            {% if ai_insights.anomalies %}
+            <div class="section">
+                <h2>⚠️ Detected Anomalies</h2>
+                {% for anomaly in ai_insights.anomalies %}
+                <div class="gap-card {% if anomaly.severity == 'High' %}high{% else %}medium{% endif %}">
+                    <span class="severity-badge severity-{{ anomaly.severity | lower }}">{{ anomaly.severity }}</span>
+                    <h3>{{ anomaly.type }}</h3>
+                    <p><strong>Description:</strong> {{ anomaly.description }}</p>
+                    <p><strong>Recommendation:</strong> {{ anomaly.recommendation }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
             <!-- NIST Scores -->
             <div class="section">
                 <h2>NIST Cybersecurity Framework Scores</h2>
@@ -306,40 +666,70 @@
                         <tr>
                             <td><strong>Identify</strong></td>
                             <td>{{ "%.1f" | format(nist_scores.Identify * 100) }}%</td>
-                            <td class="{% if nist_scores.Identify >= 0.9 %}status-good{% elif nist_scores.Identify >= 0.75 %}status-warning{% else %}status-critical{% endif %}">
-                                {% if nist_scores.Identify >= 0.9 %}✓ Strong{% elif nist_scores.Identify >= 0.75 %}→ Good{% else %}⚠ Needs Work{% endif %}
+                            <td>
+                                {% if nist_scores.Identify >= 0.9 %}
+                                <span class="status-badge status-strong">✓ Strong</span>
+                                {% elif nist_scores.Identify >= 0.75 %}
+                                <span class="status-badge status-good">→ Good</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Needs Work</span>
+                                {% endif %}
                             </td>
                             <td>Asset visibility and inventory management</td>
                         </tr>
                         <tr>
                             <td><strong>Protect</strong></td>
                             <td>{{ "%.1f" | format(nist_scores.Protect * 100) }}%</td>
-                            <td class="{% if nist_scores.Protect >= 0.9 %}status-good{% elif nist_scores.Protect >= 0.75 %}status-warning{% else %}status-critical{% endif %}">
-                                {% if nist_scores.Protect >= 0.9 %}✓ Strong{% elif nist_scores.Protect >= 0.75 %}→ Good{% else %}⚠ Needs Work{% endif %}
+                            <td>
+                                {% if nist_scores.Protect >= 0.9 %}
+                                <span class="status-badge status-strong">✓ Strong</span>
+                                {% elif nist_scores.Protect >= 0.75 %}
+                                <span class="status-badge status-good">→ Good</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Needs Work</span>
+                                {% endif %}
                             </td>
                             <td>Preventive security controls</td>
                         </tr>
                         <tr>
                             <td><strong>Detect</strong></td>
                             <td>{{ "%.1f" | format(nist_scores.Detect * 100) }}%</td>
-                            <td class="{% if nist_scores.Detect >= 0.9 %}status-good{% elif nist_scores.Detect >= 0.75 %}status-warning{% else %}status-critical{% endif %}">
-                                {% if nist_scores.Detect >= 0.9 %}✓ Strong{% elif nist_scores.Detect >= 0.75 %}→ Good{% else %}⚠ Needs Work{% endif %}
+                            <td>
+                                {% if nist_scores.Detect >= 0.9 %}
+                                <span class="status-badge status-strong">✓ Strong</span>
+                                {% elif nist_scores.Detect >= 0.75 %}
+                                <span class="status-badge status-good">→ Good</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Needs Work</span>
+                                {% endif %}
                             </td>
                             <td>Threat detection and monitoring</td>
                         </tr>
                         <tr>
                             <td><strong>Respond</strong></td>
                             <td>{{ "%.1f" | format(nist_scores.Respond * 100) }}%</td>
-                            <td class="{% if nist_scores.Respond >= 0.9 %}status-good{% elif nist_scores.Respond >= 0.75 %}status-warning{% else %}status-critical{% endif %}">
-                                {% if nist_scores.Respond >= 0.9 %}✓ Strong{% elif nist_scores.Respond >= 0.75 %}→ Good{% else %}⚠ Needs Work{% endif %}
+                            <td>
+                                {% if nist_scores.Respond >= 0.9 %}
+                                <span class="status-badge status-strong">✓ Strong</span>
+                                {% elif nist_scores.Respond >= 0.75 %}
+                                <span class="status-badge status-good">→ Good</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Needs Work</span>
+                                {% endif %}
                             </td>
                             <td>Incident response and SLA performance</td>
                         </tr>
                         <tr>
                             <td><strong>Recover</strong></td>
                             <td>{{ "%.1f" | format(nist_scores.Recover * 100) }}%</td>
-                            <td class="{% if nist_scores.Recover >= 0.9 %}status-good{% elif nist_scores.Recover >= 0.75 %}status-warning{% else %}status-critical{% endif %}">
-                                {% if nist_scores.Recover >= 0.9 %}✓ Strong{% elif nist_scores.Recover >= 0.75 %}→ Good{% else %}⚠ Needs Work{% endif %}
+                            <td>
+                                {% if nist_scores.Recover >= 0.9 %}
+                                <span class="status-badge status-strong">✓ Strong</span>
+                                {% elif nist_scores.Recover >= 0.75 %}
+                                <span class="status-badge status-good">→ Good</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Needs Work</span>
+                                {% endif %}
                             </td>
                             <td>Business continuity and backup</td>
                         </tr>
@@ -350,6 +740,7 @@
             <!-- Key Metrics -->
             <div class="section">
                 <h2>Key Operational Metrics</h2>
+                
                 <div class="metric-grid">
                     <div class="metric-box">
                         <div class="label">Total Assets</div>
@@ -361,11 +752,11 @@
                     </div>
                     <div class="metric-box">
                         <div class="label">Servers</div>
-                        <div class="value">{{ signals.total_servers }}</div>
+                        <div class="value">{{ signals.server_count }}</div>
                     </div>
                     <div class="metric-box">
                         <div class="label">Endpoints</div>
-                        <div class="value">{{ signals.total_endpoints }}</div>
+                        <div class="value">{{ signals.endpoint_count }}</div>
                     </div>
                 </div>
                 
@@ -383,45 +774,65 @@
                             <td>Patch Compliance</td>
                             <td>{{ "%.1f" | format(signals.patch_compliance) }}%</td>
                             <td>≥ 95%</td>
-                            <td class="{% if signals.patch_compliance >= 95 %}status-good{% else %}status-critical{% endif %}">
-                                {% if signals.patch_compliance >= 95 %}✓ Meeting Target{% else %}⚠ Below Target{% endif %}
+                            <td>
+                                {% if signals.patch_compliance >= 95 %}
+                                <span class="status-badge status-strong">✓ On Target</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Below Target</span>
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <td>Backup Coverage</td>
                             <td>{{ "%.1f" | format(signals.backup_status) }}%</td>
                             <td>≥ 98%</td>
-                            <td class="{% if signals.backup_status >= 98 %}status-good{% else %}status-critical{% endif %}">
-                                {% if signals.backup_status >= 98 %}✓ Meeting Target{% else %}⚠ Below Target{% endif %}
+                            <td>
+                                {% if signals.backup_status >= 98 %}
+                                <span class="status-badge status-strong">✓ On Target</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Below Target</span>
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <td>EDR Coverage</td>
                             <td>{{ "%.1f" | format(signals.edr) }}%</td>
                             <td>≥ 90%</td>
-                            <td class="{% if signals.edr >= 90 %}status-good{% else %}status-critical{% endif %}">
-                                {% if signals.edr >= 90 %}✓ Meeting Target{% else %}⚠ Below Target{% endif %}
+                            <td>
+                                {% if signals.edr >= 90 %}
+                                <span class="status-badge status-strong">✓ On Target</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Below Target</span>
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <td>SLA Attainment</td>
                             <td>{{ "%.1f" | format(signals.response_time_sla) }}%</td>
                             <td>≥ 90%</td>
-                            <td class="{% if signals.response_time_sla >= 90 %}status-good{% else %}status-warning{% endif %}">
-                                {% if signals.response_time_sla >= 90 %}✓ Meeting Target{% else %}⚠ Below Target{% endif %}
+                            <td>
+                                {% if signals.response_time_sla >= 90 %}
+                                <span class="status-badge status-strong">✓ On Target</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Below Target</span>
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <td>MFA Enforcement</td>
-                            <td>{% if signals.mfa >= 100 %}Enabled{% else %}Not Enabled{% endif %}</td>
+                            <td>{% if signals.mfa_enforced %}Enabled{% else %}Not Enabled{% endif %}</td>
                             <td>Enabled</td>
-                            <td class="{% if signals.mfa >= 100 %}status-good{% else %}status-critical{% endif %}">
-                                {% if signals.mfa >= 100 %}✓ Enabled{% else %}⚠ Not Enabled{% endif %}
+                            <td>
+                                {% if signals.mfa_enforced %}
+                                <span class="status-badge status-strong">✓ Enabled</span>
+                                {% else %}
+                                <span class="status-badge status-needs-work">⚠ Not Enabled</span>
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <td>Avg. Monthly Incidents</td>
-                            <td>{{ "%.0f" | format(signals.incident_volume) }}</td>
+                            <td>{{ signals.avg_monthly_incidents }}</td>
                             <td>-</td>
                             <td>-</td>
                         </tr>
@@ -434,22 +845,20 @@
                 <h2>Identified Gaps and Risks</h2>
                 {% if gaps %}
                     {% for gap in gaps %}
-                    <div class="gap-card severity-{{ gap.severity|lower }}">
-                        <div class="gap-header">
-                            <div class="gap-title">{{ gap.issue }}</div>
-                            <div class="severity-badge {{ gap.severity|lower }}">{{ gap.severity }}</div>
-                        </div>
+                    <div class="gap-card {% if gap.severity == 'High' %}high{% elif gap.severity == 'Medium' %}medium{% endif %}">
+                        <span class="severity-badge severity-{{ gap.severity | lower }}">{{ gap.severity }}</span>
+                        <h3>{{ gap.gap }}</h3>
                         <p><strong>Category:</strong> {{ gap.category }}</p>
-                        <p><strong>Current Value:</strong> {{ "%.1f" | format(gap.current_value) }}% | <strong>Threshold:</strong> {{ gap.threshold }}%</p>
+                        <p><strong>Current Value:</strong> {{ gap.current_value }} | <strong>Threshold:</strong> {{ gap.threshold }}</p>
                         <p><strong>Impact:</strong> {{ gap.impact }}</p>
                     </div>
                     {% endfor %}
                 {% else %}
-                    <p style="color: #10b981; font-weight: bold;">✓ No significant gaps identified. Current posture meets or exceeds best practice thresholds.</p>
+                    <p style="color: #10b981; font-weight: bold;">✓ No critical gaps identified. Current security posture meets or exceeds all thresholds.</p>
                 {% endif %}
             </div>
             
-            <!-- Recommendations -->
+            <!-- Standard Recommendations -->
             <div class="section">
                 <h2>Recommendations</h2>
                 {% if recommendations %}
@@ -536,8 +945,8 @@
         
         <div class="footer">
             <p><strong>Report prepared by Computer Integration Technologies</strong></p>
-            <p>Automated Strategic Business Review Generator</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">Data extracted from HaloPSA | NIST CSF v1.1 Methodology</p>
+            <p>Automated Strategic Business Review Generator with AI Insights</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Data extracted from HaloPSA | NIST CSF v1.1 Methodology | AI-Powered Analysis</p>
         </div>
     </div>
 </body>
