@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBR Generator - Strategic Business Review</title>
+    <title>SBR Generator - Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
         
@@ -67,24 +67,83 @@
             opacity: 0.9;
         }
         
-        .main-content {
+        .tiles-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
         
-        .card {
+        .tile {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            cursor: pointer;
         }
         
-        .card h2 {
-            color: #667eea;
-            margin-bottom: 20px;
+        .tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .tile-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .tile-header .icon {
+            font-size: 2.5em;
+        }
+        
+        .tile-header .title {
+            flex: 1;
+        }
+        
+        .tile-header h2 {
             font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .tile-header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+        
+        .tile-content {
+            padding: 30px;
+        }
+        
+        .tile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box .label {
+            font-size: 0.9em;
+            color: #6b7280;
         }
         
         .form-group {
@@ -98,6 +157,7 @@
             color: #333;
         }
         
+        .form-group select,
         .form-group input {
             width: 100%;
             padding: 12px;
@@ -107,6 +167,7 @@
             transition: border-color 0.3s;
         }
         
+        .form-group select:focus,
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
@@ -134,16 +195,50 @@
             transform: translateY(0);
         }
         
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .tile-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            padding: 12px;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #e5e7eb;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
         }
         
         .status-message {
-            margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
-            display: none;
+            margin-bottom: 20px;
+            font-weight: 500;
         }
         
         .status-message.success {
@@ -158,158 +253,156 @@
             border: 2px solid #ef4444;
         }
         
-        .status-message.info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 2px solid #3b82f6;
+        .report-types {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
         }
         
-        .reports-list {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        
-        .report-item {
+        .report-type-option {
+            padding: 12px;
             background: #f9fafb;
             border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .report-type-option:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+        }
+        
+        .report-type-option.selected {
+            background: #ede9fe;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .report-type-option input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .audience-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .audience-option {
+            padding: 10px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+        
+        .audience-option:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+        }
+        
+        .audience-option.selected {
+            background: #ede9fe;
+            border-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .readiness-score {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
         }
         
-        .report-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .report-item h3 {
+        .readiness-score .score {
+            font-size: 4em;
+            font-weight: bold;
             color: #667eea;
             margin-bottom: 10px;
         }
         
-        .report-meta {
+        .readiness-score .label {
+            font-size: 1.2em;
+            color: #374151;
+        }
+        
+        .readiness-categories {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            margin: 15px 0;
-            font-size: 0.9em;
         }
         
-        .report-meta-item {
+        .category-item {
             display: flex;
+            justify-content: space-between;
             align-items: center;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
         }
         
-        .report-meta-item strong {
-            margin-right: 5px;
+        .category-item .name {
+            font-weight: 600;
+            color: #374151;
         }
         
-        .score-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
+        .category-item .score {
             font-weight: bold;
-            font-size: 1.1em;
+            color: #667eea;
         }
         
-        .score-excellent {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .score-good {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .score-fair {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .score-poor {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .report-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .btn-small {
-            padding: 8px 16px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9em;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.2s;
-        }
-        
-        .btn-small:hover {
-            background: #764ba2;
-        }
-        
-        .loading {
+        .modal {
             display: none;
-            text-align: center;
-            margin: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
         
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+        .modal.active {
+            display: flex;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #667eea;
+        }
+        
+        .close-btn {
+            font-size: 1.5em;
+            cursor: pointer;
             color: #6b7280;
         }
         
-        .empty-state svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        
-        .info-box {
-            background: #f0f9ff;
-            border: 2px solid #3b82f6;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .info-box h4 {
-            color: #1e40af;
-            margin-bottom: 10px;
-        }
-        
-        .info-box ul {
-            margin-left: 20px;
-            color: #1e40af;
-        }
-        
-        .info-box li {
-            margin: 5px 0;
+        .close-btn:hover {
+            color: #374151;
         }
     </style>
 </head>
@@ -323,176 +416,418 @@
             </a>
             {% endif %}
             <h1>🎯 SBR Generator</h1>
-            <p>Strategic Business Review - Automated NIST CSF Assessment</p>
+            <p>Strategic Business Review - Enterprise Dashboard</p>
         </div>
         
-        <div class="main-content">
-            <!-- Generate Form -->
-            <div class="card">
-                <h2>Generate New Review</h2>
-                
-                <div class="info-box">
-                    <h4>ℹ️ Quick Start</h4>
-                    <ul>
-                        <li>Enter any Customer ID</li>
-                        <li>Mock data is enabled by default</li>
-                        <li>Reports generated in all formats</li>
-                    </ul>
-                </div>
-                
-                <form id="generateForm">
-                    <div class="form-group">
-                        <label for="customerId">Customer ID</label>
-                        <input type="text" id="customerId" name="customerId" placeholder="e.g., CUST001" required>
+        <div class="tiles-grid">
+            <!-- Live Dashboard Tile -->
+            <div class="tile" onclick="openDashboard()">
+                <div class="tile-header">
+                    <div class="icon">📊</div>
+                    <div class="title">
+                        <h2>Live Dashboard</h2>
+                        <p>Real-time statistics and insights</p>
                     </div>
-                    
-                    <button type="submit" class="btn" id="generateBtn">
-                        Generate Review
-                    </button>
-                </form>
-                
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 10px; color: #667eea; font-weight: 600;">Generating report...</p>
                 </div>
-                
-                <div class="status-message" id="statusMessage"></div>
+                <div class="tile-content">
+                    <div class="tile-stats">
+                        <div class="stat-box">
+                            <div class="value" id="totalCustomers">0</div>
+                            <div class="label">Customers</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="value" id="totalReports">0</div>
+                            <div class="label">Reports</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="value" id="avgScore">0%</div>
+                            <div class="label">Avg Score</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="value" id="totalGaps">0</div>
+                            <div class="label">Total Gaps</div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="event.stopPropagation(); openDashboard();">
+                        View Full Dashboard
+                    </button>
+                </div>
             </div>
             
-            <!-- Reports List -->
-            <div class="card">
-                <h2>Recent Reports</h2>
-                <div class="reports-list" id="reportsList">
-                    <div class="empty-state">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <h3>No reports yet</h3>
-                        <p>Generate your first Strategic Business Review to get started</p>
+            <!-- Strategic Reports Tile -->
+            <div class="tile">
+                <div class="tile-header">
+                    <div class="icon">📄</div>
+                    <div class="title">
+                        <h2>Strategic Reports</h2>
+                        <p>Generate targeted business reviews</p>
+                    </div>
+                </div>
+                <div class="tile-content">
+                    <div id="reportsMessage"></div>
+                    
+                    <div class="form-group">
+                        <label for="reportsCustomer">Select Customer</label>
+                        <select id="reportsCustomer" onchange="loadCustomerData('reports')">
+                            <option value="">Choose a customer...</option>
+                            <option value="CUST001">Acme Corporation</option>
+                            <option value="CUST002">TechStart Inc</option>
+                            <option value="CUST003">Global Finance Ltd</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Report Type</label>
+                        <div class="report-types">
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="full" checked>
+                                <span>Full Strategic Review</span>
+                            </label>
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="executive">
+                                <span>Executive Summary</span>
+                            </label>
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="technical">
+                                <span>Technical Deep Dive</span>
+                            </label>
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="budget">
+                                <span>Budget Justification</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Target Audience</label>
+                        <div class="audience-selector">
+                            <div class="audience-option" onclick="selectAudience(this, 'executive')">
+                                👔 Executive
+                            </div>
+                            <div class="audience-option" onclick="selectAudience(this, 'board')">
+                                🏛️ Board
+                            </div>
+                            <div class="audience-option" onclick="selectAudience(this, 'operations')">
+                                ⚙️ Operations
+                            </div>
+                            <div class="audience-option" onclick="selectAudience(this, 'technical')">
+                                💻 Technical
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="generateReport()">
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+            
+            <!-- AI Readiness Tile -->
+            <div class="tile">
+                <div class="tile-header">
+                    <div class="icon">🤖</div>
+                    <div class="title">
+                        <h2>AI Readiness</h2>
+                        <p>Assess AI maturity and potential</p>
+                    </div>
+                </div>
+                <div class="tile-content">
+                    <div id="aiMessage"></div>
+                    
+                    <div class="form-group">
+                        <label for="aiCustomer">Select Customer</label>
+                        <select id="aiCustomer" onchange="loadCustomerData('ai')">
+                            <option value="">Choose a customer...</option>
+                            <option value="CUST001">Acme Corporation</option>
+                            <option value="CUST002">TechStart Inc</option>
+                            <option value="CUST003">Global Finance Ltd</option>
+                        </select>
+                    </div>
+                    
+                    <div id="aiReadinessDisplay" style="display: none;">
+                        <div class="readiness-score">
+                            <div class="score" id="aiReadinessScore">--</div>
+                            <div class="label">AI Readiness Score</div>
+                        </div>
+                        
+                        <div class="readiness-categories">
+                            <div class="category-item">
+                                <span class="name">Data Infrastructure</span>
+                                <span class="score" id="dataInfraScore">--</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="name">Technical Capability</span>
+                                <span class="score" id="techCapScore">--</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="name">Organizational Readiness</span>
+                                <span class="score" id="orgReadyScore">--</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="name">Security & Compliance</span>
+                                <span class="score" id="secCompScore">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tile-actions">
+                        <button class="action-btn" onclick="assessAIReadiness()">
+                            📊 Assess
+                        </button>
+                        <button class="action-btn" onclick="generateAIReport()">
+                            📄 Generate Report
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
+    <!-- Dashboard Modal -->
+    <div id="dashboardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Live Dashboard</h2>
+                <span class="close-btn" onclick="closeDashboard()">&times;</span>
+            </div>
+            <div id="dashboardContent">
+                <div class="loading">Loading dashboard data...</div>
+            </div>
+        </div>
+    </div>
+    
     <script>
-        // Load reports on page load
+        let selectedAudience = null;
+        
+        // Load statistics on page load
         document.addEventListener('DOMContentLoaded', function() {
-            loadReports();
+            loadStatistics();
         });
         
-        // Handle form submission
-        document.getElementById('generateForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        function loadStatistics() {
+            fetch('/api/reports')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.reports) {
+                        const reports = data.reports;
+                        document.getElementById('totalReports').textContent = reports.length;
+                        
+                        // Calculate unique customers
+                        const customers = new Set(reports.map(r => r.customer_id));
+                        document.getElementById('totalCustomers').textContent = customers.size;
+                        
+                        // Calculate average score
+                        if (reports.length > 0) {
+                            const avgScore = reports.reduce((sum, r) => sum + r.overall_score, 0) / reports.length;
+                            document.getElementById('avgScore').textContent = avgScore.toFixed(1) + '%';
+                        }
+                        
+                        // Calculate total gaps
+                        const totalGaps = reports.reduce((sum, r) => sum + (r.gaps_count || 0), 0);
+                        document.getElementById('totalGaps').textContent = totalGaps;
+                    }
+                })
+                .catch(error => console.error('Error loading statistics:', error));
+        }
+        
+        function selectAudience(element, audience) {
+            // Remove selected class from all audience options
+            document.querySelectorAll('.audience-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
             
-            const customerId = document.getElementById('customerId').value;
-            const btn = document.getElementById('generateBtn');
-            const loading = document.getElementById('loading');
-            const statusMessage = document.getElementById('statusMessage');
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            selectedAudience = audience;
+        }
+        
+        function loadCustomerData(context) {
+            const customerId = document.getElementById(context + 'Customer').value;
             
-            // Show loading
-            btn.disabled = true;
-            loading.style.display = 'block';
-            statusMessage.style.display = 'none';
+            if (!customerId) {
+                if (context === 'ai') {
+                    document.getElementById('aiReadinessDisplay').style.display = 'none';
+                }
+                return;
+            }
             
-            try {
-                const response = await fetch('/api/generate-review', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ customer_id: customerId })
+            if (context === 'ai') {
+                // Show AI readiness display
+                document.getElementById('aiReadinessDisplay').style.display = 'block';
+                
+                // Mock data - in production, fetch from API
+                const mockScores = {
+                    'CUST001': { overall: 72, data: 78, tech: 65, org: 70, sec: 75 },
+                    'CUST002': { overall: 85, data: 90, tech: 82, org: 88, sec: 80 },
+                    'CUST003': { overall: 58, data: 60, tech: 55, org: 62, sec: 55 }
+                };
+                
+                const scores = mockScores[customerId] || { overall: 0, data: 0, tech: 0, org: 0, sec: 0 };
+                
+                document.getElementById('aiReadinessScore').textContent = scores.overall;
+                document.getElementById('dataInfraScore').textContent = scores.data + '%';
+                document.getElementById('techCapScore').textContent = scores.tech + '%';
+                document.getElementById('orgReadyScore').textContent = scores.org + '%';
+                document.getElementById('secCompScore').textContent = scores.sec + '%';
+            }
+        }
+        
+        function generateReport() {
+            const customerId = document.getElementById('reportsCustomer').value;
+            const reportType = document.querySelector('input[name="reportType"]:checked').value;
+            
+            if (!customerId) {
+                showMessage('reportsMessage', 'Please select a customer', 'error');
+                return;
+            }
+            
+            if (!selectedAudience) {
+                showMessage('reportsMessage', 'Please select a target audience', 'error');
+                return;
+            }
+            
+            showMessage('reportsMessage', 'Generating report...', 'success');
+            
+            // Call API to generate report
+            fetch('/api/generate-review', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customer_id: customerId,
+                    report_type: reportType,
+                    audience: selectedAudience
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.report_id) {
+                    showMessage('reportsMessage', 
+                        `Report generated successfully! Score: ${data.overall_score}%`, 
+                        'success');
+                    
+                    // Reload statistics
+                    loadStatistics();
+                    
+                    // Open report after 1 second
+                    setTimeout(() => {
+                        window.open(`/view/${data.report_id}`, '_blank');
+                    }, 1000);
+                } else {
+                    showMessage('reportsMessage', 'Error generating report', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('reportsMessage', 'Error: ' + error.message, 'error');
+            });
+        }
+        
+        function assessAIReadiness() {
+            const customerId = document.getElementById('aiCustomer').value;
+            
+            if (!customerId) {
+                showMessage('aiMessage', 'Please select a customer', 'error');
+                return;
+            }
+            
+            showMessage('aiMessage', 'Assessing AI readiness...', 'success');
+            
+            // Reload customer data
+            loadCustomerData('ai');
+            
+            setTimeout(() => {
+                showMessage('aiMessage', 'Assessment complete!', 'success');
+            }, 1500);
+        }
+        
+        function generateAIReport() {
+            const customerId = document.getElementById('aiCustomer').value;
+            
+            if (!customerId) {
+                showMessage('aiMessage', 'Please select a customer', 'error');
+                return;
+            }
+            
+            showMessage('aiMessage', 'Generating AI Readiness Report...', 'success');
+            
+            // Call API to generate AI readiness report
+            fetch('/api/generate-ai-readiness', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customer_id: customerId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('aiMessage', 'AI Readiness Report generated!', 'success');
+                } else {
+                    showMessage('aiMessage', 'Feature coming soon!', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('aiMessage', 'Feature coming soon!', 'error');
+            });
+        }
+        
+        function openDashboard() {
+            document.getElementById('dashboardModal').classList.add('active');
+            loadDashboardData();
+        }
+        
+        function closeDashboard() {
+            document.getElementById('dashboardModal').classList.remove('active');
+        }
+        
+        function loadDashboardData() {
+            const content = document.getElementById('dashboardContent');
+            
+            fetch('/api/reports')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.reports && data.reports.length > 0) {
+                        let html = '<h3>Recent Reports</h3>';
+                        html += '<div style="display: grid; gap: 15px;">';
+                        
+                        data.reports.slice(0, 10).forEach(report => {
+                            html += `
+                                <div style="padding: 15px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #667eea;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <strong>${report.customer_name}</strong>
+                                        <span style="color: #667eea; font-weight: bold;">${report.overall_score}%</span>
+                                    </div>
+                                    <div style="font-size: 0.9em; color: #6b7280;">
+                                        Generated: ${new Date(report.created_at).toLocaleString()}
+                                    </div>
+                                    <div style="margin-top: 10px;">
+                                        <a href="/view/${report.id}" target="_blank" style="color: #667eea; text-decoration: none;">View Report →</a>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
+                        content.innerHTML = html;
+                    } else {
+                        content.innerHTML = '<p style="text-align: center; color: #6b7280;">No reports generated yet</p>';
+                    }
+                })
+                .catch(error => {
+                    content.innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading dashboard data</p>';
                 });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    showMessage('success', `✓ Report generated successfully for ${data.customer_name}! Overall Score: ${(data.overall_score * 100).toFixed(1)}%`);
-                    loadReports();
-                    document.getElementById('customerId').value = '';
-                } else {
-                    showMessage('error', `✗ Error: ${data.error || 'Failed to generate report'}`);
-                }
-            } catch (error) {
-                showMessage('error', `✗ Error: ${error.message}`);
-            } finally {
-                btn.disabled = false;
-                loading.style.display = 'none';
-            }
-        });
-        
-        // Load reports list
-        async function loadReports() {
-            try {
-                const response = await fetch('/api/reports');
-                const data = await response.json();
-                
-                const reportsList = document.getElementById('reportsList');
-                
-                if (data.reports && data.reports.length > 0) {
-                    reportsList.innerHTML = data.reports.map(report => createReportCard(report)).join('');
-                } else {
-                    reportsList.innerHTML = `
-                        <div class="empty-state">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <h3>No reports yet</h3>
-                            <p>Generate your first Strategic Business Review to get started</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to load reports:', error);
-            }
         }
         
-        // Create report card HTML
-        function createReportCard(report) {
-            const score = report.overall_score * 100;
-            let scoreClass = 'score-poor';
-            if (score >= 90) scoreClass = 'score-excellent';
-            else if (score >= 75) scoreClass = 'score-good';
-            else if (score >= 60) scoreClass = 'score-fair';
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status-message ${type}">${message}</div>`;
             
-            const date = new Date(report.generated_at).toLocaleString();
-            
-            return `
-                <div class="report-item">
-                    <h3>${report.customer_name}</h3>
-                    <div class="report-meta">
-                        <div class="report-meta-item">
-                            <strong>ID:</strong> ${report.customer_id}
-                        </div>
-                        <div class="report-meta-item">
-                            <strong>Generated:</strong> ${date}
-                        </div>
-                        <div class="report-meta-item">
-                            <strong>Score:</strong> <span class="score-badge ${scoreClass}">${score.toFixed(1)}%</span>
-                        </div>
-                        <div class="report-meta-item">
-                            <strong>Gaps:</strong> ${report.gaps.length}
-                        </div>
-                        <div class="report-meta-item">
-                            <strong>Monthly Cost:</strong> $${report.total_monthly_cost.toFixed(2)}
-                        </div>
-                    </div>
-                    <div class="report-actions">
-                        <a href="/view/${report.id}" target="_blank" class="btn-small">👁️ View</a>
-                        <a href="/api/reports/${report.id}/download/html" class="btn-small">📄 HTML</a>
-                        <a href="/api/reports/${report.id}/download/markdown" class="btn-small">📝 Markdown</a>
-                        ${report.pdf_path ? `<a href="/api/reports/${report.id}/download/pdf" class="btn-small">📕 PDF</a>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Show status message
-        function showMessage(type, message) {
-            const statusMessage = document.getElementById('statusMessage');
-            statusMessage.className = `status-message ${type}`;
-            statusMessage.textContent = message;
-            statusMessage.style.display = 'block';
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
         }
     </script>
 </body>

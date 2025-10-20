@@ -556,6 +556,27 @@ def test_azure_connection():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+@app.route('/api/generate-ai-readiness', methods=['POST'])
+def generate_ai_readiness():
+    """Generate AI Readiness Assessment"""
+    try:
+        data = request.get_json()
+        customer_id = data.get('customer_id')
+        
+        if not customer_id:
+            return jsonify({'success': False, 'message': 'Customer ID required'}), 400
+        
+        # For now, return success with placeholder
+        # In production, this would generate a full AI readiness report
+        return jsonify({
+            'success': True,
+            'message': 'AI Readiness assessment feature coming soon!',
+            'customer_id': customer_id
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 
