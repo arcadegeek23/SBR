@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for, flash, session
 from datetime import datetime
 import os
 
@@ -12,14 +12,23 @@ from app.report_builder import ReportBuilder
 from app.ai_insights import AIInsightsEngine
 from app.roi_engine import ROIEngine
 from app.stakeholder_content import StakeholderContentGenerator
+from app.admin_auth import AdminAuth, require_admin
+from app.integration_config import IntegrationConfig
+from app.halo_sync import HaloSyncService
+from app.azure_ai_service import AzureAIService
 
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
 app.config.from_object(Config)
+app.secret_key = Config.SECRET_KEY
 
 # Initialize database
 db.init_app(app)
+
+# Initialize admin components
+admin_auth = AdminAuth()
+integration_config = IntegrationConfig()
 
 # Initialize components
 halo = HaloConnector(
@@ -308,6 +317,242 @@ def view_report(report_id):
         html_content = f.read()
     
     return html_content
+
+# ============================================================================
+# ADMIN ROUTES
+# ============================================================================
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin login page"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if admin_auth.verify_credentials(username, password):
+            admin_auth.login(username)
+            flash('Login successful!', 'success')
+            return redirect(url_for('admin_panel'))
+        else:
+            flash('Invalid credentials', 'error')
+    
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout', methods=['POST'])
+def admin_logout():
+    """Admin logout"""
+    admin_auth.logout()
+    flash('Logged out successfully', 'info')
+    return redirect(url_for('admin_login'))
+
+@app.route('/admin')
+@require_admin
+def admin_panel():
+    """Admin panel main page"""
+    # Get configuration
+    halo_config = integration_config.get_halo_config()
+    okta_config = integration_config.get_okta_config()
+    azure_config = integration_config.get_azure_ai_config()
+    sync_history = integration_config.get_sync_history()
+    
+    # Get customer statistics
+    customers = Customer.query.all()
+    customer_count = len(customers)
+    report_count = ReportRun.query.count()
+    
+    # Add report count to each customer
+    for customer in customers:
+        customer.report_count = ReportRun.query.filter_by(customer_id=customer.customer_id).count()
+    
+    return render_template('admin.html',
+                         halo_config=halo_config,
+                         okta_config=okta_config,
+                         azure_config=azure_config,
+                         sync_history=sync_history,
+                         customers=customers,
+                         customer_count=customer_count,
+                         report_count=report_count)
+
+@app.route('/admin/halo/save', methods=['POST'])
+@require_admin
+def save_halo_config():
+    """Save HaloPSA configuration"""
+    config = {
+        'enabled': request.form.get('enabled') == 'on',
+        'api_url': request.form.get('api_url', ''),
+        'client_id': request.form.get('client_id', ''),
+        'client_secret': request.form.get('client_secret', ''),
+        'tenant_id': request.form.get('tenant_id', '')
+    }
+    
+    if integration_config.set_halo_config(config):
+        flash('HaloPSA configuration saved successfully', 'success')
+    else:
+        flash('Error saving configuration', 'error')
+    
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/halo/test', methods=['POST'])
+@require_admin
+def test_halo_connection():
+    """Test HaloPSA connection"""
+    config = integration_config.get_halo_config()
+    
+    if not config.get('api_url') or not config.get('client_id'):
+        return jsonify({'success': False, 'message': 'Configuration incomplete'})
+    
+    try:
+        sync_service = HaloSyncService(
+            api_url=config['api_url'],
+            client_id=config['client_id'],
+            client_secret=config['client_secret'],
+            tenant_id=config.get('tenant_id')
+        )
+        
+        success, message = sync_service.test_connection()
+        return jsonify({'success': success, 'message': message})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/admin/halo/import', methods=['POST'])
+@require_admin
+def import_halo_customers():
+    """Import customers from HaloPSA"""
+    config = integration_config.get_halo_config()
+    
+    if not config.get('enabled'):
+        return jsonify({'success': False, 'message': 'HaloPSA integration not enabled'})
+    
+    try:
+        sync_service = HaloSyncService(
+            api_url=config['api_url'],
+            client_id=config['client_id'],
+            client_secret=config['client_secret'],
+            tenant_id=config.get('tenant_id')
+        )
+        
+        # Fetch customers
+        success, customers, message = sync_service.fetch_customers()
+        
+        if not success:
+            integration_config.add_sync_history('halo', 'error', message, 0)
+            return jsonify({'success': False, 'message': message})
+        
+        # Import to database
+        added, updated, errors = sync_service.import_customers_to_db(customers)
+        
+        # Update sync history
+        total = added + updated
+        integration_config.add_sync_history(
+            'halo', 
+            'success', 
+            f'Imported {total} customers ({added} new, {updated} updated, {errors} errors)',
+            total
+        )
+        integration_config.update_last_sync('halo', 'success')
+        
+        return jsonify({
+            'success': True,
+            'added': added,
+            'updated': updated,
+            'errors': errors,
+            'total': total,
+            'message': f'Successfully imported {total} customers'
+        })
+    
+    except Exception as e:
+        integration_config.add_sync_history('halo', 'error', str(e), 0)
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/admin/okta/save', methods=['POST'])
+@require_admin
+def save_okta_config():
+    """Save Okta configuration"""
+    config = {
+        'enabled': request.form.get('enabled') == 'on',
+        'domain': request.form.get('domain', ''),
+        'client_id': request.form.get('client_id', ''),
+        'client_secret': request.form.get('client_secret', ''),
+        'redirect_uri': request.form.get('redirect_uri', ''),
+        'issuer': request.form.get('issuer', '')
+    }
+    
+    if integration_config.set_okta_config(config):
+        flash('Okta configuration saved successfully', 'success')
+    else:
+        flash('Error saving configuration', 'error')
+    
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/okta/test', methods=['POST'])
+@require_admin
+def test_okta_connection():
+    """Test Okta connection"""
+    config = integration_config.get_okta_config()
+    
+    if not config.get('domain') or not config.get('client_id'):
+        return jsonify({'success': False, 'message': 'Configuration incomplete'})
+    
+    try:
+        # Test by fetching OIDC discovery document
+        import requests
+        issuer = config.get('issuer') or f"https://{config['domain']}/oauth2/default"
+        discovery_url = f"{issuer}/.well-known/openid-configuration"
+        
+        response = requests.get(discovery_url, timeout=10)
+        
+        if response.status_code == 200:
+            return jsonify({'success': True, 'message': 'Connection successful! OIDC discovery endpoint accessible.'})
+        else:
+            return jsonify({'success': False, 'message': f'Discovery endpoint returned {response.status_code}'})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/admin/azure/save', methods=['POST'])
+@require_admin
+def save_azure_config():
+    """Save Azure AI configuration"""
+    config = {
+        'enabled': request.form.get('enabled') == 'on',
+        'endpoint': request.form.get('endpoint', ''),
+        'api_key': request.form.get('api_key', ''),
+        'deployment_name': request.form.get('deployment_name', ''),
+        'api_version': request.form.get('api_version', '2024-02-15-preview'),
+        'temperature': float(request.form.get('temperature', 0.7)),
+        'max_tokens': int(request.form.get('max_tokens', 2000))
+    }
+    
+    if integration_config.set_azure_ai_config(config):
+        flash('Azure AI configuration saved successfully', 'success')
+    else:
+        flash('Error saving configuration', 'error')
+    
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/azure/test', methods=['POST'])
+@require_admin
+def test_azure_connection():
+    """Test Azure AI connection"""
+    config = integration_config.get_azure_ai_config()
+    
+    if not config.get('endpoint') or not config.get('api_key'):
+        return jsonify({'success': False, 'message': 'Configuration incomplete'})
+    
+    try:
+        ai_service = AzureAIService(
+            endpoint=config['endpoint'],
+            api_key=config['api_key'],
+            deployment_name=config['deployment_name'],
+            api_version=config['api_version']
+        )
+        
+        success, message = ai_service.test_connection()
+        return jsonify({'success': success, 'message': message})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
