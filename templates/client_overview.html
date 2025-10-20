@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ customer.name }} - Client Overview | SBR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header .segment-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            width: 250px;
+            height: calc(100vh - 80px);
+            background: white;
+            border-right: 1px solid #e1e8ed;
+            padding: 20px 0;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-menu li:hover,
+        .sidebar-menu li.active {
+            background: #f0f4f8;
+            border-left: 3px solid #667eea;
+        }
+        
+        .main-content {
+            margin-left: 270px;
+        }
+        
+        .dmi-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .dmi-gauge {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .dmi-score {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .dmi-score-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .dmi-score-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .dmi-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-poor { color: #e74c3c; }
+        .status-fair { color: #f39c12; }
+        .status-good { color: #3498db; }
+        .status-excellent { color: #27ae60; }
+        
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .card-action {
+            color: #667eea;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .card-action:hover {
+            text-decoration: underline;
+        }
+        
+        .initiative-item {
+            padding: 16px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .initiative-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .initiative-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .initiative-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-proposed { background: #fff3cd; color: #856404; }
+        .status-open { background: #d1ecf1; color: #0c5460; }
+        
+        .initiative-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .assets-list {
+            list-style: none;
+        }
+        
+        .assets-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        .assets-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .asset-count {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .insight-card {
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .insight-high-risk { background: #fee; border-left: 4px solid #e74c3c; }
+        .insight-warning { background: #fff3cd; border-left: 4px solid #f39c12; }
+        .insight-info { background: #d1ecf1; border-left: 4px solid #3498db; }
+        
+        .insight-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .insight-label {
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .action-items-list {
+            list-style: none;
+        }
+        
+        .action-item {
+            padding: 12px;
+            border-left: 3px solid #667eea;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        
+        .action-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .action-item-meta {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid #e1e8ed;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>{{ customer.name }} <span class="segment-badge">{{ segment.tier or 'Not Assigned' }}</span></h1>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="window.location.href='/'">← Back to Dashboard</button>
+            <button class="btn btn-primary" onclick="window.location.href='/admin'">⚙️ Admin</button>
+        </div>
+    </div>
+    
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li class="active" data-view="overview">📊 Overview</li>
+            <li data-view="goals">🎯 Goals</li>
+            <li data-view="roadmap">🗺️ Roadmap</li>
+            <li data-view="meetings">📅 Meetings</li>
+            <li data-view="budget">💰 Budget</li>
+            <li data-view="assessments">📋 Assessments</li>
+            <li data-view="analytics">📈 Analytics</li>
+            <li data-view="contacts">👥 Contacts</li>
+            <li data-view="assets">💻 Assets</li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="container">
+            <!-- DMI Score Section -->
+            <div class="section-grid">
+                <div class="dmi-section">
+                    <div class="dmi-gauge">
+                        <svg width="200" height="200" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#e1e8ed" stroke-width="20"/>
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#667eea" stroke-width="20" 
+                                    stroke-dasharray="{{ (segment.health_score or 0) * 5.03 }} 502.4" 
+                                    stroke-linecap="round" transform="rotate(-90 100 100)"/>
+                        </svg>
+                        <div class="dmi-score">
+                            <div class="dmi-score-value">{{ segment.health_score or 0 }}</div>
+                            <div class="dmi-score-label">DMI</div>
+                        </div>
+                    </div>
+                    <div class="dmi-status status-{{ segment.health_status or 'poor' }}">
+                        {{ segment.health_status or 'Poor' }}
+                    </div>
+                    <p style="text-align: center; margin-top: 10px; font-size: 13px; color: #7f8c8d;">
+                        Updated about 3 hours ago
+                    </p>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 15px;">DMI Insights →</button>
+                </div>
+                
+                <!-- Activities Section -->
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h3 class="card-title">Activities</h3>
+                        <a href="#" class="card-action">View all →</a>
+                    </div>
+                    <div class="tabs">
+                        <div class="tab active">✅ Action Items</div>
+                        <div class="tab">📝 Notes</div>
+                    </div>
+                    <div id="action-items-content">
+                        <button class="btn btn-primary" style="margin-bottom: 20px;">+ Create action items</button>
+                        <ul class="action-items-list" id="actionItemsList">
+                            <li class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <p>No action items yet</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Initiatives Section -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h3 class="card-title">Initiatives</h3>
+                    <a href="#" class="card-action">Manage Roadmap →</a>
+                </div>
+                <div id="initiativesList">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Assets and Insights Grid -->
+            <div class="section-grid" style="margin-top: 20px;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Assets</h3>
+                        <span class="asset-count">{{ customer.total_assets or 0 }}</span>
+                    </div>
+                    <ul class="assets-list">
+                        <li><span>🖥️ Servers</span> <span class="asset-count">{{ customer.servers or 0 }}</span></li>
+                        <li><span>💻 Workstations</span> <span class="asset-count">-</span></li>
+                        <li><span>🖨️ Virtual Machines</span> <span class="asset-count">-</span></li>
+                        <li><span>📱 Mobiles</span> <span class="asset-count">-</span></li>
+                        <li><span>🌐 Network</span> <span class="asset-count">-</span></li>
+                    </ul>
+                </div>
+                
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h3 class="card-title">💡 Insights</h3>
+                        <a href="#" class="card-action">Create New →</a>
+                    </div>
+                    <h4 style="margin-bottom: 15px; font-size: 16px;">High-risk</h4>
+                    <div class="insights-grid" id="insightsGrid">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load client data
+        const customerId = '{{ customer.customer_id }}';
+        
+        // Load action items
+        async function loadActionItems() {
+            try {
+                const response = await fetch(`/api/lifecycle/action-items?customer_id=${customerId}`);
+                const items = await response.json();
+                
+                const list = document.getElementById('actionItemsList');
+                if (items.length === 0) {
+                    list.innerHTML = '<li class="empty-state"><div class="empty-state-icon">📋</div><p>No action items yet</p></li>';
+                } else {
+                    list.innerHTML = items.map(item => `
+                        <li class="action-item">
+                            <div class="action-item-title">${item.title}</div>
+                            <div class="action-item-meta">
+                                ${item.assigned_to || 'Unassigned'} • ${item.due_date || 'No due date'}
+                            </div>
+                        </li>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading action items:', error);
+            }
+        }
+        
+        // Load goals/initiatives
+        async function loadInitiatives() {
+            try {
+                const response = await fetch(`/api/lifecycle/goals?customer_id=${customerId}`);
+                const goals = await response.json();
+                
+                const list = document.getElementById('initiativesList');
+                if (goals.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><p>No initiatives yet</p></div>';
+                } else {
+                    list.innerHTML = goals.map(goal => `
+                        <div class="initiative-item">
+                            <div class="initiative-header">
+                                <div class="initiative-title">${goal.title}</div>
+                                <span class="initiative-status status-${goal.status}">${goal.status}</span>
+                            </div>
+                            <div class="initiative-meta">
+                                <span>💰 ${goal.current_value || 'N/A'}</span>
+                                <span>📊 Progress: ${goal.progress_percentage}%</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading initiatives:', error);
+            }
+        }
+        
+        // Load insights
+        function loadInsights() {
+            const insightsData = [
+                { number: 2, label: 'High-risk servers', type: 'high-risk' },
+                { number: 2, label: 'Servers with an expired warranty', type: 'warning' },
+                { number: 2, label: 'Servers with expired support', type: 'warning' },
+                { number: 10, label: 'Assets without endpoint protection', type: 'high-risk' },
+                { number: 2, label: 'Old servers without backup', type: 'high-risk' }
+            ];
+            
+            const grid = document.getElementById('insightsGrid');
+            grid.innerHTML = insightsData.map(insight => `
+                <div class="insight-card insight-${insight.type}">
+                    <div class="insight-number">${insight.number}</div>
+                    <div class="insight-label">${insight.label}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadActionItems();
+            loadInitiatives();
+            loadInsights();
+        });
+        
+        // Sidebar navigation
+        document.querySelectorAll('.sidebar-menu li').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar-menu li').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const view = this.getAttribute('data-view');
+                // Handle view switching
+                console.log('Switching to view:', view);
+            });
+        });
+    </script>
+</body>
+</html>
+

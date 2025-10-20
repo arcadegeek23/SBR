@@ -16,6 +16,7 @@ from app.admin_auth import AdminAuth, require_admin
 from app.integration_config import IntegrationConfig
 from app.halo_sync import HaloSyncService
 from app.azure_ai_service import AzureAIService
+from app.lifecycle_routes import init_lifecycle_routes
 
 app = Flask(__name__, 
             template_folder='../templates',
@@ -700,6 +701,29 @@ def generate_ai_readiness():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+# Initialize lifecycle routes
+lifecycle_bp = init_lifecycle_routes(app, db)
+app.register_blueprint(lifecycle_bp)
+
+# Add client overview route
+@app.route('/client/<customer_id>')
+def client_overview(customer_id):
+    """Client overview page"""
+    from app.lifecycle_models import ClientSegmentation
+    
+    customer = Customer.query.filter_by(customer_id=customer_id).first_or_404()
+    segment = ClientSegmentation.query.filter_by(customer_id=customer_id).first()
+    
+    return render_template('client_overview.html', 
+                         customer=customer.to_dict(),
+                         segment=segment.to_dict() if segment else {})
+
+# Add meetings hub route
+@app.route('/meetings')
+def meetings_hub():
+    """Meetings hub page"""
+    return render_template('meetings_hub.html')
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0', port=5000, debug=True)
 

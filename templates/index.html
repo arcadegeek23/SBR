@@ -628,6 +628,51 @@
                 </div>
             </div>
             
+            <!-- Meetings Hub Tile -->
+            <div class="tile">
+                <div class="tile-header">
+                    <div class="icon">📅</div>
+                    <div class="title">
+                        <h2>Meetings Hub</h2>
+                        <p>Manage client meetings and QBRs</p>
+                    </div>
+                </div>
+                <div class="tile-content">
+                    <div class="tile-actions">
+                        <button class="action-btn" onclick="window.location.href='/meetings'">
+                            📅 View All Meetings
+                        </button>
+                        <button class="action-btn" onclick="window.location.href='/meetings#new'">
+                            ➕ Schedule Meeting
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Client List Tile -->
+            <div class="tile">
+                <div class="tile-header">
+                    <div class="icon">🏢</div>
+                    <div class="title">
+                        <h2>Client Overview</h2>
+                        <p>View client health and initiatives</p>
+                    </div>
+                </div>
+                <div class="tile-content">
+                    <div class="form-group">
+                        <label>Select Client:</label>
+                        <select id="clientOverviewSelect" class="form-control">
+                            <option value="">Select a client...</option>
+                        </select>
+                    </div>
+                    <div class="tile-actions">
+                        <button class="action-btn" onclick="viewClientOverview()">
+                            👁️ View Overview
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Customer Management Tile -->
             <div class="tile">
                 <div class="tile-header">
@@ -1197,8 +1242,35 @@
             }
         }
         
+        function viewClientOverview() {
+            const select = document.getElementById('clientOverviewSelect');
+            const customerId = select.value;
+            
+            if (!customerId) {
+                alert('Please select a client');
+                return;
+            }
+            
+            window.location.href = `/client/${customerId}`;
+        }
+        
         // Load customer stats on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Load clients for overview dropdown
+            fetch('/api/customers')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('clientOverviewSelect');
+                    if (data.customers) {
+                        data.customers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.customer_id;
+                            option.textContent = customer.name;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading clients:', error));
             fetch('/api/customers')
                 .then(response => response.json())
                 .then(data => {

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meetings Hub | SBR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid #e1e8ed;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search-box {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .meetings-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8f9fa;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .meeting-title {
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .meeting-title:hover {
+            text-decoration: underline;
+        }
+        
+        .meeting-type {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        
+        .goal-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .attendee-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
+        .date-upcoming {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        
+        .date-past {
+            color: #7f8c8d;
+        }
+        
+        .new-meeting-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .new-meeting-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .agenda-items {
+            list-style: none;
+        }
+        
+        .agenda-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .agenda-item input {
+            flex: 1;
+        }
+        
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .add-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 Meetings Hub</h1>
+        <div>
+            <button class="btn btn-secondary" onclick="window.location.href='/'">← Back to Dashboard</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-status="upcoming">📋 Upcoming (<span id="upcomingCount">0</span>)</div>
+            <div class="tab" data-status="completed">✅ Completed</div>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label class="filter-label">Meeting Type:</label>
+                <select id="meetingTypeFilter">
+                    <option value="">All type</option>
+                    <option value="qbr">Business Review</option>
+                    <option value="discovery">Discovery</option>
+                    <option value="checkin">Check-in</option>
+                    <option value="project">Project meeting</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Attendees:</label>
+                <select id="attendeeFilter">
+                    <option value="">All attendees</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Account team:</label>
+                <select id="accountTeamFilter">
+                    <option value="">Select a member...</option>
+                </select>
+            </div>
+            
+            <input type="text" class="search-box" id="searchBox" placeholder="Search...">
+        </div>
+        
+        <div class="meetings-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Client</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Goals</th>
+                        <th>Attendees</th>
+                        <th>Client Attendees</th>
+                    </tr>
+                </thead>
+                <tbody id="meetingsTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            Loading meetings...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <button class="new-meeting-btn" onclick="openNewMeetingModal()">+</button>
+    
+    <!-- New Meeting Modal -->
+    <div class="modal" id="newMeetingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">New Meeting</h2>
+                <button class="close-btn" onclick="closeNewMeetingModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="newMeetingForm">
+                    <div class="form-group">
+                        <label class="form-label">Meeting Title *</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Client *</label>
+                            <select class="form-control" name="customer_id" required>
+                                <option value="">Select client...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Meeting Type *</label>
+                            <select class="form-control" name="meeting_type" required>
+                                <option value="qbr">Business Review</option>
+                                <option value="discovery">Discovery</option>
+                                <option value="checkin">Check-in</option>
+                                <option value="project">Project meeting</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Date & Time *</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Duration (minutes)</label>
+                            <input type="number" class="form-control" name="duration_minutes" value="60">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" name="location" placeholder="Online, Office, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Agenda Items</label>
+                        <ul class="agenda-items" id="agendaItems">
+                            <li class="agenda-item">
+                                <input type="text" class="form-control" placeholder="Agenda item...">
+                                <input type="number" class="form-control" placeholder="Minutes" style="width: 100px;">
+                            </li>
+                        </ul>
+                        <button type="button" class="add-btn" onclick="addAgendaItem()">+ Add Item</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeNewMeetingModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveMeeting()">Save Meeting</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentStatus = 'upcoming';
+        let allMeetings = [];
+        
+        // Load meetings
+        async function loadMeetings() {
+            try {
+                const response = await fetch('/api/lifecycle/meetings');
+                allMeetings = await response.json();
+                filterAndDisplayMeetings();
+            } catch (error) {
+                console.error('Error loading meetings:', error);
+                document.getElementById('meetingsTableBody').innerHTML = `
+                    <tr><td colspan="7" style="text-align: center; padding: 40px; color: #e74c3c;">
+                        Error loading meetings
+                    </td></tr>
+                `;
+            }
+        }
+        
+        function filterAndDisplayMeetings() {
+            const now = new Date();
+            const filtered = allMeetings.filter(m => {
+                const meetingDate = new Date(m.scheduled_date);
+                if (currentStatus === 'upcoming') {
+                    return meetingDate >= now || m.status === 'scheduled';
+                } else {
+                    return meetingDate < now || m.status === 'completed';
+                }
+            });
+            
+            document.getElementById('upcomingCount').textContent = filtered.filter(m => {
+                const meetingDate = new Date(m.scheduled_date);
+                return meetingDate >= now;
+            }).length;
+            
+            const tbody = document.getElementById('meetingsTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        No ${currentStatus} meetings
+                    </td></tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(meeting => {
+                const meetingDate = new Date(meeting.scheduled_date);
+                const isUpcoming = meetingDate >= now;
+                const dateClass = isUpcoming ? 'date-upcoming' : 'date-past';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="meeting-title" onclick="viewMeeting(${meeting.id})">${meeting.title}</div>
+                            <div class="meeting-type">${meeting.meeting_type || 'Meeting'}</div>
+                        </td>
+                        <td>${meeting.customer_id}</td>
+                        <td>${meeting.meeting_type || '-'}</td>
+                        <td class="${dateClass}">${formatDate(meeting.scheduled_date)}</td>
+                        <td>
+                            ${meeting.agenda && meeting.agenda.goals ? 
+                                meeting.agenda.goals.map(g => `<span class="goal-pill">${g}</span>`).join('') : 
+                                '-'}
+                        </td>
+                        <td>
+                            ${meeting.attendees && meeting.attendees.internal ? 
+                                meeting.attendees.internal.map(a => `<span class="attendee-badge">${a}</span>`).join('') : 
+                                '-'}
+                        </td>
+                        <td>
+                            ${meeting.attendees && meeting.attendees.client ? 
+                                meeting.attendees.client.join(', ') : 
+                                '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = date - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (days === 0) return 'Today';
+            if (days === 1) return 'Tomorrow';
+            if (days > 0 && days < 7) return `In ${days} Days`;
+            if (days < 0 && days > -7) return `${Math.abs(days)} days ago`;
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        
+        function openNewMeetingModal() {
+            document.getElementById('newMeetingModal').classList.add('show');
+            loadCustomersForDropdown();
+        }
+        
+        function closeNewMeetingModal() {
+            document.getElementById('newMeetingModal').classList.remove('show');
+        }
+        
+        async function loadCustomersForDropdown() {
+            try {
+                const response = await fetch('/api/customers');
+                const customers = await response.json();
+                
+                const select = document.querySelector('select[name="customer_id"]');
+                select.innerHTML = '<option value="">Select client...</option>' +
+                    customers.map(c => `<option value="${c.customer_id}">${c.name}</option>`).join('');
+            } catch (error) {
+                console.error('Error loading customers:', error);
+            }
+        }
+        
+        function addAgendaItem() {
+            const list = document.getElementById('agendaItems');
+            const item = document.createElement('li');
+            item.className = 'agenda-item';
+            item.innerHTML = `
+                <input type="text" class="form-control" placeholder="Agenda item...">
+                <input type="number" class="form-control" placeholder="Minutes" style="width: 100px;">
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+            list.appendChild(item);
+        }
+        
+        async function saveMeeting() {
+            const form = document.getElementById('newMeetingForm');
+            const formData = new FormData(form);
+            
+            // Collect agenda items
+            const agendaItems = [];
+            document.querySelectorAll('.agenda-item').forEach(item => {
+                const inputs = item.querySelectorAll('input');
+                if (inputs[0].value) {
+                    agendaItems.push({
+                        title: inputs[0].value,
+                        duration: parseInt(inputs[1].value) || 0
+                    });
+                }
+            });
+            
+            const meetingData = {
+                customer_id: formData.get('customer_id'),
+                title: formData.get('title'),
+                meeting_type: formData.get('meeting_type'),
+                description: formData.get('description'),
+                scheduled_date: formData.get('scheduled_date'),
+                duration_minutes: parseInt(formData.get('duration_minutes')),
+                location: formData.get('location'),
+                agenda: { items: agendaItems },
+                created_by: 'admin'
+            };
+            
+            try {
+                const response = await fetch('/api/lifecycle/meetings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(meetingData)
+                });
+                
+                if (response.ok) {
+                    closeNewMeetingModal();
+                    loadMeetings();
+                    alert('Meeting created successfully!');
+                } else {
+                    alert('Error creating meeting');
+                }
+            } catch (error) {
+                console.error('Error saving meeting:', error);
+                alert('Error creating meeting');
+            }
+        }
+        
+        function viewMeeting(meetingId) {
+            window.location.href = `/meeting/${meetingId}`;
+        }
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentStatus = this.getAttribute('data-status');
+                filterAndDisplayMeetings();
+            });
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMeetings();
+        });
+    </script>
+</body>
+</html>
+
