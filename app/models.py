@@ -54,21 +54,53 @@ class ReportRun(db.Model):
         }
 
 class Customer(db.Model):
-    """Cache for customer metadata from Halo"""
+    """Cache for customer metadata from Halo or manual entry"""
     __tablename__ = 'customers'
     
-    id = db.Column(db.String(100), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    customer_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
     name = db.Column(db.String(255), nullable=False)
     industry = db.Column(db.String(50), default='government')  # government, nonprofit, manufacturing, financial, healthcare
+    
+    # Contact Information
+    contact = db.Column(db.String(255))
+    email = db.Column(db.String(255))
+    phone = db.Column(db.String(50))
+    
+    # Organization Details
+    employees = db.Column(db.Integer)
+    total_assets = db.Column(db.Integer)
+    servers = db.Column(db.Integer)
+    
+    # Technical Metrics (can be manually entered if integration incomplete)
+    patch_compliance = db.Column(db.Float)  # Percentage
+    backup_success = db.Column(db.Float)    # Percentage
+    edr_coverage = db.Column(db.Float)      # Percentage
+    sla_attainment = db.Column(db.Float)    # Percentage
+    
+    # Metadata
     custom_metadata = db.Column(db.JSON)
     last_synced = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
         return {
             'id': self.id,
+            'customer_id': self.customer_id,
             'name': self.name,
             'industry': self.industry,
+            'contact': self.contact,
+            'email': self.email,
+            'phone': self.phone,
+            'employees': self.employees,
+            'total_assets': self.total_assets,
+            'servers': self.servers,
+            'patch_compliance': self.patch_compliance,
+            'backup_success': self.backup_success,
+            'edr_coverage': self.edr_coverage,
+            'sla_attainment': self.sla_attainment,
             'metadata': self.custom_metadata,
-            'last_synced': self.last_synced.isoformat()
+            'last_synced': self.last_synced.isoformat() if self.last_synced else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

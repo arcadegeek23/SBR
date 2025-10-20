@@ -234,6 +234,53 @@
             color: #6b7280;
         }
         
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .form-section h3 {
+            margin-bottom: 15px;
+            color: #374151;
+            font-size: 1.1em;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+        
         .status-message {
             padding: 15px;
             border-radius: 8px;
@@ -580,6 +627,42 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Customer Management Tile -->
+            <div class="tile">
+                <div class="tile-header">
+                    <div class="icon">👥</div>
+                    <div class="title">
+                        <h2>Customer Management</h2>
+                        <p>Manage customer data and details</p>
+                    </div>
+                </div>
+                <div class="tile-content">
+                    <div id="customerMessage"></div>
+                    
+                    <div class="tile-actions">
+                        <button class="action-btn" onclick="showCustomerList()">
+                            📋 View All Customers
+                        </button>
+                        <button class="action-btn" onclick="showAddCustomer()">
+                            ➕ Add New Customer
+                        </button>
+                    </div>
+                    
+                    <div id="customerStats" style="margin-top: 20px;">
+                        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            <div class="stat-box">
+                                <div class="value" id="customerCount">0</div>
+                                <div class="label">Total Customers</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value" id="customerReports">0</div>
+                                <div class="label">Total Reports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -592,6 +675,127 @@
             </div>
             <div id="dashboardContent">
                 <div class="loading">Loading dashboard data...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Customer List Modal -->
+    <div id="customerListModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2>👥 Customer Management</h2>
+                <span class="close-btn" onclick="closeCustomerList()">&times;</span>
+            </div>
+            <div id="customerListContent">
+                <div class="loading">Loading customers...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Customer Modal -->
+    <div id="customerFormModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="customerFormTitle">➕ Add New Customer</h2>
+                <span class="close-btn" onclick="closeCustomerForm()">&times;</span>
+            </div>
+            <div id="customerFormContent">
+                <form id="customerForm" onsubmit="saveCustomer(event)">
+                    <input type="hidden" id="customerId" value="">
+                    
+                    <div class="form-section">
+                        <h3>Basic Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerName">Customer Name *</label>
+                                <input type="text" id="customerName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerCode">Customer Code *</label>
+                                <input type="text" id="customerCode" required placeholder="e.g., CUST001">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerIndustry">Industry</label>
+                                <select id="customerIndustry">
+                                    <option value="">Select Industry...</option>
+                                    <option value="government">Government</option>
+                                    <option value="nonprofit">Nonprofit</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="financial">Financial Services</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="retail">Retail</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerEmployees">Number of Employees</label>
+                                <input type="number" id="customerEmployees" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Contact Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerContact">Primary Contact</label>
+                                <input type="text" id="customerContact">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerEmail">Email</label>
+                                <input type="email" id="customerEmail">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerPhone">Phone</label>
+                                <input type="tel" id="customerPhone">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Technical Data</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerAssets">Total Assets</label>
+                                <input type="number" id="customerAssets" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerServers">Servers</label>
+                                <input type="number" id="customerServers" min="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerPatchCompliance">Patch Compliance %</label>
+                                <input type="number" id="customerPatchCompliance" min="0" max="100" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerBackupSuccess">Backup Success Rate %</label>
+                                <input type="number" id="customerBackupSuccess" min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customerEdrCoverage">EDR Coverage %</label>
+                                <input type="number" id="customerEdrCoverage" min="0" max="100" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerSlaAttainment">SLA Attainment %</label>
+                                <input type="number" id="customerSlaAttainment" min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeCustomerForm()">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Customer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -829,6 +1033,183 @@
                 element.innerHTML = '';
             }, 5000);
         }
+        
+        // Customer Management Functions
+        function showCustomerList() {
+            const modal = document.getElementById('customerListModal');
+            modal.style.display = 'flex';
+            loadCustomers();
+        }
+        
+        function closeCustomerList() {
+            document.getElementById('customerListModal').style.display = 'none';
+        }
+        
+        function showAddCustomer() {
+            document.getElementById('customerFormTitle').textContent = '➕ Add New Customer';
+            document.getElementById('customerForm').reset();
+            document.getElementById('customerId').value = '';
+            document.getElementById('customerFormModal').style.display = 'flex';
+        }
+        
+        function showEditCustomer(customerId) {
+            document.getElementById('customerFormTitle').textContent = '✏️ Edit Customer';
+            document.getElementById('customerFormModal').style.display = 'flex';
+            
+            // Load customer data
+            fetch(`/api/customers/${customerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.customer) {
+                        const c = data.customer;
+                        document.getElementById('customerId').value = c.id;
+                        document.getElementById('customerName').value = c.name || '';
+                        document.getElementById('customerCode').value = c.customer_id || '';
+                        document.getElementById('customerIndustry').value = c.industry || '';
+                        document.getElementById('customerEmployees').value = c.employees || '';
+                        document.getElementById('customerContact').value = c.contact || '';
+                        document.getElementById('customerEmail').value = c.email || '';
+                        document.getElementById('customerPhone').value = c.phone || '';
+                        document.getElementById('customerAssets').value = c.total_assets || '';
+                        document.getElementById('customerServers').value = c.servers || '';
+                        document.getElementById('customerPatchCompliance').value = c.patch_compliance || '';
+                        document.getElementById('customerBackupSuccess').value = c.backup_success || '';
+                        document.getElementById('customerEdrCoverage').value = c.edr_coverage || '';
+                        document.getElementById('customerSlaAttainment').value = c.sla_attainment || '';
+                    }
+                })
+                .catch(error => {
+                    showMessage('customerMessage', 'Error loading customer data', 'error');
+                });
+        }
+        
+        function closeCustomerForm() {
+            document.getElementById('customerFormModal').style.display = 'none';
+        }
+        
+        function loadCustomers() {
+            const content = document.getElementById('customerListContent');
+            content.innerHTML = '<div class="loading">Loading customers...</div>';
+            
+            fetch('/api/customers')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.customers && data.customers.length > 0) {
+                        let html = '<table style="width: 100%; border-collapse: collapse;">';
+                        html += '<thead><tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">';
+                        html += '<th style="padding: 12px; text-align: left;">Customer ID</th>';
+                        html += '<th style="padding: 12px; text-align: left;">Name</th>';
+                        html += '<th style="padding: 12px; text-align: left;">Industry</th>';
+                        html += '<th style="padding: 12px; text-align: center;">Reports</th>';
+                        html += '<th style="padding: 12px; text-align: center;">Actions</th>';
+                        html += '</tr></thead><tbody>';
+                        
+                        data.customers.forEach(customer => {
+                            html += `<tr style="border-bottom: 1px solid #e5e7eb;">`;
+                            html += `<td style="padding: 12px;">${customer.customer_id}</td>`;
+                            html += `<td style="padding: 12px;">${customer.name}</td>`;
+                            html += `<td style="padding: 12px;">${customer.industry || 'N/A'}</td>`;
+                            html += `<td style="padding: 12px; text-align: center;">${customer.report_count || 0}</td>`;
+                            html += `<td style="padding: 12px; text-align: center;">`;
+                            html += `<button onclick="showEditCustomer(${customer.id})" style="padding: 6px 12px; margin: 0 4px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">✏️ Edit</button>`;
+                            html += `<button onclick="deleteCustomer(${customer.id}, '${customer.name}')" style="padding: 6px 12px; margin: 0 4px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">🗑️ Delete</button>`;
+                            html += `</td></tr>`;
+                        });
+                        
+                        html += '</tbody></table>';
+                        content.innerHTML = html;
+                        
+                        // Update stats
+                        document.getElementById('customerCount').textContent = data.customers.length;
+                        const totalReports = data.customers.reduce((sum, c) => sum + (c.report_count || 0), 0);
+                        document.getElementById('customerReports').textContent = totalReports;
+                    } else {
+                        content.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">No customers found. Click "Add New Customer" to get started.</p>';
+                        document.getElementById('customerCount').textContent = '0';
+                        document.getElementById('customerReports').textContent = '0';
+                    }
+                })
+                .catch(error => {
+                    content.innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading customers</p>';
+                });
+        }
+        
+        function saveCustomer(event) {
+            event.preventDefault();
+            
+            const customerId = document.getElementById('customerId').value;
+            const customerData = {
+                customer_id: document.getElementById('customerCode').value,
+                name: document.getElementById('customerName').value,
+                industry: document.getElementById('customerIndustry').value,
+                employees: parseInt(document.getElementById('customerEmployees').value) || null,
+                contact: document.getElementById('customerContact').value,
+                email: document.getElementById('customerEmail').value,
+                phone: document.getElementById('customerPhone').value,
+                total_assets: parseInt(document.getElementById('customerAssets').value) || null,
+                servers: parseInt(document.getElementById('customerServers').value) || null,
+                patch_compliance: parseFloat(document.getElementById('customerPatchCompliance').value) || null,
+                backup_success: parseFloat(document.getElementById('customerBackupSuccess').value) || null,
+                edr_coverage: parseFloat(document.getElementById('customerEdrCoverage').value) || null,
+                sla_attainment: parseFloat(document.getElementById('customerSlaAttainment').value) || null
+            };
+            
+            const url = customerId ? `/api/customers/${customerId}` : '/api/customers';
+            const method = customerId ? 'PUT' : 'POST';
+            
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(customerData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('customerMessage', customerId ? 'Customer updated successfully!' : 'Customer added successfully!', 'success');
+                    closeCustomerForm();
+                    loadCustomers();
+                } else {
+                    showMessage('customerMessage', data.message || 'Error saving customer', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('customerMessage', 'Error saving customer', 'error');
+            });
+        }
+        
+        function deleteCustomer(id, name) {
+            if (confirm(`Are you sure you want to delete customer "${name}"? This action cannot be undone.`)) {
+                fetch(`/api/customers/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('customerMessage', 'Customer deleted successfully!', 'success');
+                        loadCustomers();
+                    } else {
+                        showMessage('customerMessage', data.message || 'Error deleting customer', 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('customerMessage', 'Error deleting customer', 'error');
+                });
+            }
+        }
+        
+        // Load customer stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/customers')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.customers) {
+                        document.getElementById('customerCount').textContent = data.customers.length;
+                        const totalReports = data.customers.reduce((sum, c) => sum + (c.report_count || 0), 0);
+                        document.getElementById('customerReports').textContent = totalReports;
+                    }
+                })
+                .catch(error => console.error('Error loading customer stats:', error));
+        });
     </script>
 </body>
 </html>

@@ -556,6 +556,129 @@ def test_azure_connection():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+# Customer Management API Endpoints
+@app.route('/api/customers', methods=['GET'])
+def get_customers():
+    """Get all customers"""
+    try:
+        customers = Customer.query.all()
+        customer_list = []
+        for customer in customers:
+            report_count = ReportRun.query.filter_by(customer_id=customer.customer_id).count()
+            customer_dict = customer.to_dict()
+            customer_dict['report_count'] = report_count
+            customer_list.append(customer_dict)
+        
+        return jsonify({'success': True, 'customers': customer_list})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/customers/<int:customer_id>', methods=['GET'])
+def get_customer(customer_id):
+    """Get a specific customer"""
+    try:
+        customer = Customer.query.get(customer_id)
+        if not customer:
+            return jsonify({'success': False, 'message': 'Customer not found'}), 404
+        
+        return jsonify({'success': True, 'customer': customer.to_dict()})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/customers', methods=['POST'])
+def create_customer():
+    """Create a new customer"""
+    try:
+        data = request.get_json()
+        
+        # Check if customer_id already exists
+        existing = Customer.query.filter_by(customer_id=data.get('customer_id')).first()
+        if existing:
+            return jsonify({'success': False, 'message': 'Customer ID already exists'}), 400
+        
+        customer = Customer(
+            customer_id=data.get('customer_id'),
+            name=data.get('name'),
+            industry=data.get('industry'),
+            employees=data.get('employees'),
+            contact=data.get('contact'),
+            email=data.get('email'),
+            phone=data.get('phone'),
+            total_assets=data.get('total_assets'),
+            servers=data.get('servers'),
+            patch_compliance=data.get('patch_compliance'),
+            backup_success=data.get('backup_success'),
+            edr_coverage=data.get('edr_coverage'),
+            sla_attainment=data.get('sla_attainment')
+        )
+        
+        db.session.add(customer)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'customer': customer.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/customers/<int:customer_id>', methods=['PUT'])
+def update_customer(customer_id):
+    """Update an existing customer"""
+    try:
+        customer = Customer.query.get(customer_id)
+        if not customer:
+            return jsonify({'success': False, 'message': 'Customer not found'}), 404
+        
+        data = request.get_json()
+        
+        # Update fields
+        if 'name' in data:
+            customer.name = data['name']
+        if 'industry' in data:
+            customer.industry = data['industry']
+        if 'employees' in data:
+            customer.employees = data['employees']
+        if 'contact' in data:
+            customer.contact = data['contact']
+        if 'email' in data:
+            customer.email = data['email']
+        if 'phone' in data:
+            customer.phone = data['phone']
+        if 'total_assets' in data:
+            customer.total_assets = data['total_assets']
+        if 'servers' in data:
+            customer.servers = data['servers']
+        if 'patch_compliance' in data:
+            customer.patch_compliance = data['patch_compliance']
+        if 'backup_success' in data:
+            customer.backup_success = data['backup_success']
+        if 'edr_coverage' in data:
+            customer.edr_coverage = data['edr_coverage']
+        if 'sla_attainment' in data:
+            customer.sla_attainment = data['sla_attainment']
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'customer': customer.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/customers/<int:customer_id>', methods=['DELETE'])
+def delete_customer(customer_id):
+    """Delete a customer"""
+    try:
+        customer = Customer.query.get(customer_id)
+        if not customer:
+            return jsonify({'success': False, 'message': 'Customer not found'}), 404
+        
+        db.session.delete(customer)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Customer deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/generate-ai-readiness', methods=['POST'])
 def generate_ai_readiness():
     """Generate AI Readiness Assessment"""
