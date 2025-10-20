@@ -327,9 +327,12 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>🔧 SBR Admin Panel</h1>
-            <form action="/admin/logout" method="POST" style="display: inline;">
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="/" style="padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-size: 1em;">← Back to App</a>
+                <form action="/admin/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
         </div>
         
         {% with messages = get_flashed_messages(with_categories=true) %}

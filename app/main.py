@@ -69,7 +69,9 @@ with app.app_context():
 @app.route('/')
 def index():
     """Main dashboard"""
-    return render_template('index.html')
+    # Check if user is logged in as admin
+    is_admin = session.get('admin_logged_in', False)
+    return render_template('index.html', is_admin=is_admin)
 
 @app.route('/health')
 def health():
