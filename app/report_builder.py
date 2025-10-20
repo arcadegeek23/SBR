@@ -17,7 +17,8 @@ class ReportBuilder:
     
     def generate_report(self, customer_id: str, customer_name: str, signals: dict, 
                        nist_scores: dict, gaps: list, recommendations: list, 
-                       budget: dict, ai_insights: dict = None) -> dict:
+                       budget: dict, ai_insights: dict = None, roi_data: dict = None, 
+                       stakeholder_data: dict = None) -> dict:
         """
         Generate report in all formats
         
@@ -36,7 +37,9 @@ class ReportBuilder:
             'gaps': gaps,
             'recommendations': recommendations,
             'budget': budget,
-            'ai_insights': ai_insights or {}
+            'ai_insights': ai_insights or {},
+            'roi_data': roi_data or {},
+            'stakeholder_data': stakeholder_data or {}
         }
         
         # Generate unique filename

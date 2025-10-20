@@ -115,6 +115,100 @@ def generate_review():
         }
         ai_insights = ai_insights_engine.generate_insights(signals, customer_data)
         
+        # Step 7b: Calculate ROI and generate stakeholder content
+        industry = customer.get('industry', 'government')
+        roi_engine = ROIEngine(industry=industry)
+        stakeholder_gen = StakeholderContentGenerator()
+        
+        # Calculate all 4 ROI formats
+        critical_incidents = len([t for t in tickets if t.get('priority') == 'Critical'])
+        annual_investment = budget.get('total_monthly', 0) * 12
+        
+        roi_risk_avoidance = roi_engine.calculate_risk_avoidance_roi(
+            investment=annual_investment,
+            incidents_prevented=max(critical_incidents, 3),
+            avg_incident_duration_hours=6.0
+        )
+        
+        roi_efficiency = roi_engine.calculate_efficiency_unlock_roi(
+            hours_freed_annually=ai_insights.get('ticket_analysis', {}).get('total_tickets', 100) * 0.25,
+            cost_per_hour=50.0
+        )
+        
+        roi_compliance = roi_engine.calculate_compliance_roi(
+            current_compliance_pct=nist_scores.get('Overall', 0) * 100,
+            target_compliance_pct=100,
+            penalty_at_current=250000,
+            cost_to_reach_target=annual_investment
+        )
+        
+        roi_three_year = roi_engine.calculate_three_year_stacked_roi(
+            year1_investment=annual_investment,
+            year1_savings=roi_risk_avoidance.get('total_risk_prevented', 0) * 0.3
+        )
+        
+        # Generate industry-specific metrics and peer benchmarking
+        industry_metrics = roi_engine.generate_industry_metrics(signals, tickets)
+        peer_benchmark = roi_engine.generate_peer_benchmark(signals)
+        
+        # Calculate tiered budget
+        tiered_budget = roi_engine.calculate_tiered_budget(
+            total_budget=annual_investment,
+            gaps=gaps,
+            current_monthly_cost=budget.get('total_monthly', 0)
+        )
+        
+        # Combine all ROI data
+        roi_data = {
+            'risk_avoidance': roi_risk_avoidance,
+            'efficiency': roi_efficiency,
+            'compliance': roi_compliance,
+            'three_year': roi_three_year,
+            'industry_metrics': industry_metrics,
+            'peer_benchmark': peer_benchmark,
+            'tiered_budget': tiered_budget
+        }
+        
+        # Generate stakeholder content
+        executive_onepager = stakeholder_gen.generate_executive_onepager(
+            customer_name=customer.get('name', 'Unknown'),
+            overall_score=nist_scores.get('Overall', 0) * 100,
+            roi_data=roi_risk_avoidance,
+            top_risks=gaps[:3],
+            top_recommendations=recommendations[:3]
+        )
+        
+        board_talking_points = stakeholder_gen.generate_board_talking_points(
+            customer_name=customer.get('name', 'Unknown'),
+            industry=industry,
+            key_metrics=industry_metrics,
+            peer_benchmark=peer_benchmark,
+            incidents_prevented=critical_incidents
+        )
+        
+        budget_justification = stakeholder_gen.generate_budget_justification(
+            tiered_budget=tiered_budget,
+            current_state={
+                'compliance_pct': nist_scores.get('Overall', 0) * 100,
+                'gap_count': len(gaps),
+                'posture_description': 'Needs Improvement' if nist_scores.get('Overall', 0) < 0.75 else 'Good',
+                'risk_exposure': roi_risk_avoidance.get('total_risk_prevented', 0)
+            },
+            target_state={
+                'compliance_pct': 100,
+                'gaps_closed': len(gaps),
+                'posture_description': 'Strong',
+                'risk_reduction': roi_risk_avoidance.get('total_risk_prevented', 0)
+            }
+        )
+        
+        stakeholder_data = {
+            'executive_onepager': executive_onepager,
+            'board_talking_points': board_talking_points,
+            'budget_justification': budget_justification,
+            'industry': industry_metrics.get('industry', 'Unknown')
+        }
+        
         # Step 8: Generate reports
         report_paths = report_builder.generate_report(
             customer_id=customer_id,
@@ -124,7 +218,9 @@ def generate_review():
             gaps=gaps,
             recommendations=recommendations,
             budget=budget,
-            ai_insights=ai_insights
+            ai_insights=ai_insights,
+            roi_data=roi_data,
+            stakeholder_data=stakeholder_data
         )
         
         # Step 9: Save to database
