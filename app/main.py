@@ -10,6 +10,8 @@ from app.scoring_engine import ScoringEngine
 from app.budget_engine import BudgetEngine
 from app.report_builder import ReportBuilder
 from app.ai_insights import AIInsightsEngine
+from app.roi_engine import ROIEngine
+from app.stakeholder_content import StakeholderContentGenerator
 
 app = Flask(__name__, 
             template_folder='../templates',
@@ -129,6 +131,7 @@ def generate_review():
         report_run = ReportRun(
             customer_id=customer_id,
             customer_name=customer.get('name', 'Unknown'),
+            industry=customer.get('industry', 'government'),
             signals=signals,
             nist_scores=nist_scores,
             overall_score=nist_scores.get('Overall', 0),

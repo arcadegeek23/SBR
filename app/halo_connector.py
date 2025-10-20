@@ -123,10 +123,14 @@ class HaloConnector:
     # Mock data methods
     def _mock_customer(self, customer_id: str) -> Dict:
         """Generate mock customer data"""
+        # Randomly assign industry for mock data
+        industries = ['government', 'nonprofit', 'manufacturing', 'financial', 'healthcare']
+        industry = random.choice(industries)
+        
         return {
             'id': customer_id,
             'name': f'Acme Corporation {customer_id}',
-            'industry': 'Technology',
+            'industry': industry,
             'mfa_enforced': random.choice([True, False]),
             'employee_count': random.randint(50, 500)
         }

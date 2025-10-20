@@ -11,6 +11,7 @@ class ReportRun(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.String(100), nullable=False, index=True)
     customer_name = db.Column(db.String(255), nullable=False)
+    industry = db.Column(db.String(50), default='government')
     generated_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     # Signals (stored as JSON)
@@ -38,6 +39,7 @@ class ReportRun(db.Model):
             'id': self.id,
             'customer_id': self.customer_id,
             'customer_name': self.customer_name,
+            'industry': self.industry,
             'generated_at': self.generated_at.isoformat(),
             'signals': self.signals,
             'nist_scores': self.nist_scores,
@@ -57,6 +59,7 @@ class Customer(db.Model):
     
     id = db.Column(db.String(100), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
+    industry = db.Column(db.String(50), default='government')  # government, nonprofit, manufacturing, financial, healthcare
     custom_metadata = db.Column(db.JSON)
     last_synced = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -64,6 +67,7 @@ class Customer(db.Model):
         return {
             'id': self.id,
             'name': self.name,
+            'industry': self.industry,
             'metadata': self.custom_metadata,
             'last_synced': self.last_synced.isoformat()
         }
